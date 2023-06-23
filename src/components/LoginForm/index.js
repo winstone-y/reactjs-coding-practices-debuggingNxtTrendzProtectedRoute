@@ -6,24 +6,24 @@ import './index.css'
 
 class LoginForm extends Component {
   state = {
-    username: '',
-    password: '',
+    inputUserName: '',
+    inputPassword: '',
     showSubmitError: false,
     errorMsg: '',
   }
 
   onChangeUsername = event => {
-    this.setState({username: event.target.value})
+    this.setState({inputUserName: event.target.value})
   }
 
   onChangePassword = event => {
-    this.setState({password: event.target.value})
+    this.setState({inputPassword: event.target.value})
   }
 
   onSubmitSuccess = jwtToken => {
     const {history} = this.props
     history.replace('/')
-    Cookies.set('jwt_token', jwtToken, {expiry: 30})
+    Cookies.set('jwt_token', jwtToken, {expires: 30})
   }
 
   onSubmitFailure = errorMsg => {
@@ -32,25 +32,34 @@ class LoginForm extends Component {
 
   submitForm = async event => {
     event.preventDefault()
-    const {username, password} = this.state
-    const userDetails = {username, password}
-    const url = 'https://apis.ccbp.in/login'
-    const options = {
-      method: 'POST',
-      data: JSON.stringify(userDetails),
-    }
-    const response = await fetch(url, options)
-    const data = await response.json()
+    const {inputUserName, inputPassword} = this.state
+    if (inputUserName !== '' && inputPassword !== '') {
+      const userDetails = {username: inputUserName, password: inputPassword}
+      const url = 'https://apis.ccbp.in/login'
+      const options = {
+        method: 'POST',
+        body: JSON.stringify(userDetails),
+      }
+      const response = await fetch(url, options)
+      const data = await response.json()
 
-    if (response.ok === true) {
-      this.onSubmitSuccess(data.jwt_token)
+      if (response.ok === true) {
+        this.onSubmitSuccess(data.jwt_token)
+      } else {
+        this.onSubmitFailure(data.error_msg)
+      }
     } else {
-      this.onSubmitFailure(data.error_msg)
+      if (inputUserName === '') {
+        this.setState({showSubmitError: true, errorMsg: 'username required'})
+      }
+      if (inputPassword === '') {
+        this.setState({showSubmitError: true, errorMsg: 'password required'})
+      }
     }
   }
 
   renderPasswordField = () => {
-    const {password} = this.state
+    const {inputPassword, showSubmitError, errorMsg} = this.state
 
     return (
       <>
@@ -61,16 +70,17 @@ class LoginForm extends Component {
           type="password"
           id="password"
           className="password-input-field"
-          value={password}
+          value={inputPassword}
           onChange={this.onChangePassword}
           placeholder="Password"
         />
+        {inputPassword === '' && showSubmitError ? <p>{errorMsg}</p> : ''}
       </>
     )
   }
 
   renderUsernameField = () => {
-    const {username} = this.state
+    const {inputUserName, showSubmitError, errorMsg} = this.state
 
     return (
       <>
@@ -81,10 +91,11 @@ class LoginForm extends Component {
           type="text"
           id="username"
           className="username-input-field"
-          value={username}
+          value={inputUserName}
           onChange={this.onChangeUsername}
           placeholder="Username"
         />
+        {inputUserName === '' && showSubmitError ? <p>{errorMsg}</p> : ''}
       </>
     )
   }

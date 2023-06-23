@@ -6,13 +6,11 @@ import Products from './components/Products'
 import Cart from './components/Cart'
 import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
-import Header from './components/Header'
 
 import './App.css'
 
 const App = () => (
   <>
-    <Header />
     <Switch>
       <Route exact path="/login" component={LoginForm} />
       <ProtectedRoute exact path="/" component={Home} />
